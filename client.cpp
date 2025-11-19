@@ -90,8 +90,10 @@ int main() {
         STR_PRIVATE_KEY = to_string(PRIVATE_KEY);
 
         //Get UID
-        //cout << "Write your username: ";
-        //cin >> UID;
+        string UID;
+        cout << "Write your username: ";
+        cin >> UID;
+        send(my_socket, UID.c_str(), UID.size(), 0);
 
         //getting new port and connectiong to it
         memset(buffer, 0, sizeof(buffer));        // <-- IMPORTANT

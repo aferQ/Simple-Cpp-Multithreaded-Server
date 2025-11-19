@@ -97,13 +97,16 @@ Listener do_handshake(int server_socket) {
         STR_PRIVATE_KEY = to_string(PRIVATE_KEY);
 
         //recive UID
-        //UID = recv(client_socket, buffer, sizeof(buffer)-1, 0);
+        memset(buffer, 0, sizeof(buffer));        // <-- IMPORTANT
+        int UID = recv(client_socket, buffer, sizeof(buffer)-1, 0);
+        buffer[UID] = '\0';     // terminate
 
         //create a new socket for next connection
         Listener L = create_listener();
         listen(L.sock, 1);  
         //listeners.push_back(L);
         L.Key = PRIVATE_KEY;
+        L.UID = buffer;
 
         //send new port 
         string new_port = to_string(L.port);
@@ -115,7 +118,7 @@ Listener do_handshake(int server_socket) {
 
 string SzyfrujDeszyfruj(string text, long long int key);
 
-void handle_client(int client_socket, int PRIVATE_KEY) {
+void handle_client(int client_socket, int PRIVATE_KEY, string UID) {
     char buffer[DEFAULT_BUFLEN];
 
     while (true) {
@@ -125,8 +128,8 @@ void handle_client(int client_socket, int PRIVATE_KEY) {
         buffer[bytesReceived] = '\0';
         string decrypted = SzyfrujDeszyfruj(buffer, PRIVATE_KEY);
 
-        cout << "[Client] Encrypted: " << buffer << endl;
-        cout << "[Client] Decrypted: " << decrypted << endl;
+        cout << "[" << UID << "] Encrypted: " << buffer << endl;
+        cout << "[" << UID << "] Decrypted: " << decrypted << endl;
 
         // echo back encrypted
         string reply = SzyfrujDeszyfruj(decrypted, PRIVATE_KEY);
@@ -137,7 +140,7 @@ void handle_client(int client_socket, int PRIVATE_KEY) {
 
 void handle_listener(Listener L) {
     int client_socket = accept(L.sock, nullptr, nullptr);
-    handle_client(client_socket, L.Key);
+    handle_client(client_socket, L.Key, L.UID);
 }
 
 string SzyfrujDeszyfruj(string text, long long int key) {
